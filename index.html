@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PrintDesk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root {
+  /* Layout: one phone-width column, sticky header, receipt-style totals, bottom tabs (Print / My orders / Admin). */
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --fg: #10151c;
+  --muted: #566070;
+  --line: #d3dae4;
+  --accent: #1f4fd8;
+  --accent-fg: #ffffff;
+  --accent-soft: #e5ebfc;
+  --ok: #127a46;
+  --ok-soft: #dff3e8;
+  --warn: #8f5400;
+  --warn-soft: #fcefd6;
+  --bad: #b3261e;
+  --bad-soft: #fde7e5;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --nav-h: 58px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1218; --surface: #171d26; --fg: #eaeef4; --muted: #9aa5b5; --line: #2a3340;
+    --accent: #7c9cff; --accent-fg: #0b1020; --accent-soft: #1b2644;
+    --ok: #5fd195; --ok-soft: #14301f; --warn: #f0b95a; --warn-soft: #36290f;
+    --bad: #ff8a80; --bad-soft: #3a1714;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1218; --surface: #171d26; --fg: #eaeef4; --muted: #9aa5b5; --line: #2a3340;
+  --accent: #7c9cff; --accent-fg: #0b1020; --accent-soft: #1b2644;
+  --ok: #5fd195; --ok-soft: #14301f; --warn: #f0b95a; --warn-soft: #36290f;
+  --bad: #ff8a80; --bad-soft: #3a1714;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-block: 0 calc(var(--nav-h) + 112px);
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: var(--bg);
+}
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.num { font-variant-numeric: tabular-nums; }
+
+.wrap {
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* header */
+.top {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); color: var(--accent-fg); display: grid; place-items: center; flex: none; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
+.rate { font-family: var(--font-display); font-weight: 500; font-size: 13px; padding: 5px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+
+/* screens */
+main.wrap { padding-block: 18px 8px; display: grid; gap: 16px; }
+.screen { display: grid; gap: 16px; min-width: 0; }
+.lead h1 { font-size: 26px; line-height: 1.15; }
+.lead p { color: var(--muted); margin-top: 6px; }
+
+.drop {
+  position: relative; display: grid; gap: 4px; place-items: center; text-align: center;
+  padding: 30px 16px; border: 1.5px dashed var(--line); border-radius: 14px;
+  background: var(--surface); cursor: pointer;
+}
+.drop::before, .drop::after { content: ""; position: absolute; width: 20px; height: 20px; border: 2.5px solid var(--accent); }
+.drop::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 14px 0 0 0; }
+.drop::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 14px 0; }
+.drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.drop strong { font-family: var(--font-display); font-size: 18px; }
+.drop span { color: var(--muted); font-size: 13px; }
+.drop svg { color: var(--accent); margin-bottom: 4px; }
+
+.list { display: grid; gap: 10px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+.file { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: start; }
+.thumb { width: 56px; height: 56px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; overflow: hidden; font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: 0.06em; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb.pdf { background: var(--bad-soft); color: var(--bad); }
+.fname { font-weight: 600; overflow-wrap: anywhere; }
+.fmeta { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.frow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.line-price { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.remove { border: 0; background: none; color: var(--muted); font-size: 13px; padding: 8px 4px; min-height: 36px; text-decoration: underline; }
+
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stepper button { width: 40px; height: 38px; border: 0; background: var(--bg); font-size: 20px; line-height: 1; }
+.stepper button:disabled { opacity: 0.4; cursor: default; }
+.stepper output { min-width: 56px; text-align: center; font-weight: 600; padding-inline: 6px; font-variant-numeric: tabular-nums; }
+.stepper-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+
+.receipt { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+.receipt .row { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); }
+.receipt .row.total { color: var(--fg); font-family: var(--font-display); font-weight: 700; font-size: 22px; border-top: 1.5px dashed var(--line); padding-top: 10px; margin-top: 2px; }
+
+.form { display: grid; gap: 12px; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; font-weight: 600; }
+.field input, .field select { height: 46px; border: 1px solid var(--line); border-radius: 8px; padding-inline: 12px; background: var(--surface); width: 100%; }
+
+.note { padding: 11px 13px; border-radius: 10px; font-size: 14px; background: var(--warn-soft); color: var(--warn); }
+.note.bad { background: var(--bad-soft); color: var(--bad); }
+.note.ok { background: var(--ok-soft); color: var(--ok); }
+.empty { text-align: center; padding: 34px 18px; color: var(--muted); display: grid; gap: 8px; justify-items: center; }
+.empty strong { color: var(--fg); font-family: var(--font-display); font-size: 17px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding-inline: 18px; border-radius: 10px; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.ghost { background: var(--accent-soft); color: var(--accent); }
+
+/* fixed bars */
+.bar {
+  position: fixed; left: 0; right: 0;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  z-index: 15; background: var(--surface); border-top: 1.5px dashed var(--line);
+}
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-block: 10px; }
+.bar .tot small { display: block; color: var(--muted); font-size: 12px; }
+.bar .tot b { font-family: var(--font-display); font-size: 22px; }
+.bar .btn { flex: 1; max-width: 260px; }
+
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav .wrap { height: var(--nav-h); display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; align-items: stretch; }
+.tab { border: 0; background: none; display: grid; justify-items: center; align-content: center; gap: 2px; color: var(--muted); font-size: 12px; font-weight: 500; border-radius: 10px; }
+.tab[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+/* orders */
+.chip { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+.chip.pending { background: var(--warn-soft); color: var(--warn); }
+.chip.printed { background: var(--accent-soft); color: var(--accent); }
+.chip.collected { background: var(--ok-soft); color: var(--ok); }
+.chip.cancelled { background: var(--bad-soft); color: var(--bad); }
+.ohead { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.ohead h3 { font-size: 16px; }
+.omini { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.items { display: grid; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.item { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.item .thumb { width: 40px; height: 40px; font-size: 10px; }
+.item .iname { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.item .isub { font-size: 12px; color: var(--muted); }
+.item a { color: var(--accent); font-size: 13px; font-weight: 600; text-decoration: none; padding: 8px 2px; }
+.ofoot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1.5px dashed var(--line); font-family: var(--font-display); font-weight: 700; }
+.ofoot select { height: 40px; width: auto; border: 1px solid var(--line); border-radius: 8px; padding-inline: 10px; background: var(--surface); font-family: var(--font-body); font-weight: 500; }
+.phone { user-select: all; }
+
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.stat b { display: block; font-family: var(--font-display); font-size: 22px; }
+.stat span { font-size: 12px; color: var(--muted); }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg button { min-height: 38px; padding-inline: 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card, .receipt { animation: rise 0.25s ease-out both; }
+  @keyframes rise { from { transform: translateY(6px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+}
+</style>
+<style>
+.field textarea{min-height:88px;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--surface);width:100%;font:inherit;color:inherit}.field input[type=radio]{width:auto;height:auto}.choice{display:flex;gap:14px;flex-wrap:wrap}.choice label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}.small{font-size:12px;color:var(--muted)}.order-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-login{display:grid;gap:10px}.order-meta{font-size:13px;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}
+</style></head><body>
+<header class="top"><div class="wrap"><div class="brand"><div class="brand-mark" aria-hidden="true">▣</div><span class="brand-name">PrintDesk</span></div><span class="rate">1 page = ₹10</span></div></header>
+<main class="wrap">
+<section class="screen" id="screen-print"><div class="lead"><h1>Send files, see your price</h1><p>Add photos or PDFs from your phone. Each printed page costs ₹10.</p></div>
+<div class="note" id="setupNotice">Website setup is not complete yet. The shop owner must add Supabase settings before orders can be submitted.</div>
+<div class="note ok" id="done" hidden><strong id="doneTitle"></strong><p id="doneText"></p></div>
+<label class="drop" for="fileInput"><strong>Add photos or PDFs</strong><span>JPG, PNG, WebP, PDF. Up to 20 MB each.</span><input class="sr" id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.pdf" multiple></label>
+<div class="note bad" id="msg" role="status" aria-live="polite" hidden></div><div class="list" id="cartList"></div><div class="receipt" id="summary" hidden></div>
+<form class="form" id="orderForm" hidden autocomplete="on">
+<div class="field"><label for="cname">Your name</label><input id="cname" maxlength="60" autocomplete="name" placeholder="Your full name" required></div>
+<div class="field"><label for="cphone">Mobile number</label><input id="cphone" type="tel" inputmode="numeric" maxlength="16" autocomplete="tel" placeholder="10-digit number" required></div>
+<div class="field"><label>Receive your prints</label><div class="choice"><label><input type="radio" name="fulfillment" value="pickup" checked> Shop pickup</label><label><input type="radio" name="fulfillment" value="delivery"> Home delivery</label></div></div>
+<div class="field" id="addressField" hidden><label for="address">Delivery address</label><textarea id="address" maxlength="500" placeholder="House / street / area / city"></textarea></div>
+<div class="field"><label>Payment method</label><div class="choice"><label><input type="radio" name="payment" value="cash" checked> Cash at shop / on delivery</label><label><input type="radio" name="payment" value="online"> Pay online (Razorpay)</label></div><div class="small">Online payment appears once the shop owner configures Razorpay.</div></div>
+<button class="btn" id="submitOrder" type="submit">Place order</button>
+</form></section>
+<section class="screen" id="screen-orders" hidden><div class="lead"><h1>My orders</h1><p>Track orders placed from this device.</p></div><div id="myOrders" class="list"></div></section>
+<section class="screen" id="screen-admin" hidden><div class="lead"><h1>Shop admin</h1><p>Sign in to manage PrintDesk orders.</p></div><div id="adminLogin" class="card admin-login"><div class="field"><label for="adminEmail">Admin email</label><input id="adminEmail" type="email" autocomplete="username"></div><div class="field"><label for="adminPassword">Password</label><input id="adminPassword" type="password" autocomplete="current-password"></div><button class="btn" id="loginBtn" type="button">Sign in</button></div><div id="adminPanel" hidden><div class="stats" id="stats"></div><button class="btn ghost" id="refreshAdmin" type="button">Refresh orders</button><button class="btn ghost" id="logoutBtn" type="button">Sign out</button><div class="note" id="adminNote" hidden></div><div class="list" id="adminList"></div></div></section>
+</main>
+<div class="bar" id="bar" hidden><div class="wrap"><div class="tot"><small id="barSub">0 pages</small><b id="barTotal">₹0</b></div><button class="btn" id="placeBtn" type="button">Continue</button></div></div>
+<nav class="nav"><div class="wrap"><button class="tab" data-tab="print" type="button">Print</button><button class="tab" data-tab="orders" type="button">My orders</button><button class="tab" data-tab="admin" type="button">Admin</button></div></nav>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function(){'use strict';
+// 1) Paste your Supabase project URL and anon/public key here. Never put the service-role key in this file.
+var SUPABASE_URL='https://uexqytykpwwnufsnvtqs.supabase.co';
+var SUPABASE_ANON_KEY='sb_publishable_K9FSpUd1MpyaBcHtSLoHUQ_mTLZdSNv';
+var RATE=10,MAX=20*1024*1024,client=null,cart=[],busy=false,adminUser=null;
+var $=function(id){return document.getElementById(id)}, money=function(n){return '₹'+Number(n).toLocaleString('en-IN')}, esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+function note(t,kind){var n=$('msg');n.textContent=t||'';n.className='note '+(kind||'bad');n.hidden=!t}
+function randomToken(){var a=new Uint8Array(32);crypto.getRandomValues(a);return Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join('')}
+function uuid(){return crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{var r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}
+function pageCount(file){return new Promise(async resolve=>{try{var buf=await file.arrayBuffer();if(window.pdfjsLib){var d=await pdfjsLib.getDocument({data:buf}).promise;var n=d.numPages;d.destroy();resolve(n);return}resolve(null)}catch(e){resolve(null)}})}
+function render(){var list=$('cartList');list.innerHTML='';var pages=0,counting=false;cart.forEach((it,i)=>{if(it.counting)counting=true;else pages+=it.pages*it.copies;var card=document.createElement('div');card.className='card file';var thumb=document.createElement('div');thumb.className='thumb'+(it.kind==='pdf'?' pdf':'');thumb.textContent=it.kind==='pdf'?'PDF':'IMG';var body=document.createElement('div');body.style.minWidth='0';body.innerHTML='<div class="fname">'+esc(it.name)+'</div><div class="fmeta">'+(it.counting?'Counting PDF pages…':it.pages+' page(s) × '+it.copies+' copies')+'</div><div class="frow"><div class="stepper"><button type="button" data-minus="'+i+'">−</button><output>'+it.copies+'</output><button type="button" data-plus="'+i+'">+</button></div><b class="line-price">'+(it.counting?'…':money(it.pages*it.copies*RATE))+'</b></div><button class="remove" type="button" data-remove="'+i+'">Remove</button>';
+card.append(thumb,body);list.append(card)});
+var has=cart.length>0;$('orderForm').hidden=!has;$('summary').hidden=!has;$('bar').hidden=!has;if(has){$('summary').innerHTML='<div class="row"><span>Files / pages</span><b>'+cart.length+' / '+pages+'</b></div><div class="row"><span>Rate</span><b>'+money(RATE)+' per page</b></div><div class="row total"><span>Total</span><b>'+(counting?'…':money(pages*RATE))+'</b></div>';$('barSub').textContent=pages+' pages × '+money(RATE);$('barTotal').textContent=counting?'…':money(pages*RATE);$('placeBtn').disabled=counting||busy;$('submitOrder').disabled=counting||busy}}
+$('cartList').addEventListener('click',e=>{var t=e.target;if(t.dataset.remove!==undefined){cart.splice(+t.dataset.remove,1);render()}if(t.dataset.plus!==undefined){cart[+t.dataset.plus].copies=Math.min(99,cart[+t.dataset.plus].copies+1);render()}if(t.dataset.minus!==undefined){cart[+t.dataset.minus].copies=Math.max(1,cart[+t.dataset.minus].copies-1);render()}});
+$('fileInput').addEventListener('change',async e=>{note('');for(const f of e.target.files){var pdf=f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'),img=['image/jpeg','image/png','image/webp','image/gif'].includes(f.type);if(!pdf&&!img){note('Unsupported file: '+f.name);continue}if(f.size>MAX){note(f.name+' is over 20 MB.');continue}var it={id:uuid(),file:f,name:f.name,kind:pdf?'pdf':'img',pages:1,copies:1,counting:pdf};cart.push(it);render();if(pdf){it.pages=await pageCount(f)||1;it.counting=false;it.manual=it.pages===1;render()}}e.target.value=''});
+document.querySelectorAll('input[name=fulfillment]').forEach(x=>x.addEventListener('change',()=>{$('addressField').hidden=document.querySelector('input[name=fulfillment]:checked').value!=='delivery'}));
+function saveToken(t){var a=JSON.parse(localStorage.getItem('printdesk-order-tokens')||'[]');a.unshift(t);localStorage.setItem('printdesk-order-tokens',JSON.stringify(a.slice(0,30)))}
+async function notify(order){try{await fetch('/.netlify/functions/notify-whatsapp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_number:order.order_number,customer_name:order.customer_name,customer_phone:order.customer_phone,total_amount:order.total_amount,fulfillment:order.fulfillment,payment_method:order.payment_method})})}catch(e){}}
+async function uploadFiles(orderId){var items=[];for(var i=0;i<cart.length;i++){var it=cart[i],path=orderId+'/'+uuid()+'-'+it.name.replace(/[^a-zA-Z0-9._-]/g,'_');var up=await client.storage.from('printdesk-orders').upload(path,it.file,{contentType:it.file.type||'application/octet-stream',upsert:false});if(up.error)throw up.error;items.push({name:it.name,kind:it.kind,pages:it.pages,copies:it.copies,storage_path:path,amount:it.pages*it.copies*RATE,manual_page_count:!!it.manual})}return items}
+async function startPayment(order){var r=await fetch('/.netlify/functions/create-razorpay-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:order.total_amount*100,receipt:order.order_number})});var data=await r.json();if(!r.ok)throw new Error(data.error||'Online payment is not configured.');return new Promise((resolve,reject)=>{if(!window.Razorpay)return reject(new Error('Payment checkout did not load.'));var rz=new Razorpay({key:data.keyId,amount:data.amount,currency:data.currency,name:'PrintDesk',description:'Printing order '+order.order_number,order_id:data.id,prefill:{name:order.customer_name,contact:order.customer_phone},handler:async function(resp){try{var v=await fetch('/.netlify/functions/verify-razorpay-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...resp,order_id:order.id})});var j=await v.json();if(!v.ok)throw new Error(j.error||'Payment verification failed');resolve(resp)}catch(e){reject(e)}},modal:{ondismiss:()=>reject(new Error('Payment window closed. Your order is saved as payment pending.'))}});rz.open()})}
+async function place(){if(busy)return;if(!client){note('Supabase is not configured. Add your project URL and anon key in index.html.');return}var name=$('cname').value.trim(),phone=$('cphone').value.replace(/\D/g,''),fulfillment=document.querySelector('input[name=fulfillment]:checked').value,payment=document.querySelector('input[name=payment]:checked').value,address=$('address').value.trim();if(name.length<2)return note('Please enter your name.');if(phone.length<10||phone.length>15)return note('Enter a valid mobile number.');if(fulfillment==='delivery'&&address.length<8)return note('Enter your complete delivery address.');if(!cart.length||cart.some(x=>x.counting))return note('Please wait for files to finish processing.');if(cart.length>10)return note('Please upload no more than 10 files per order.');
+busy=true;render();note('Uploading files and creating your order…','');try{var id=uuid(),token=randomToken(),orderNo='PD'+Date.now().toString().slice(-8),items=await uploadFiles(id),pages=items.reduce((s,x)=>s+x.pages*x.copies,0),total=pages*RATE;var record={id,order_number:orderNo,access_token:token,customer_name:name,customer_phone:phone,fulfillment,delivery_address:fulfillment==='delivery'?address:null,payment_method:payment,payment_status:'pending',status:'pending',page_count:pages,total_amount:total,items};var ins=await client.from('orders').insert(record).select('id,order_number').single();if(ins.error)throw ins.error;saveToken(token);if(payment==='online'){note('Order saved. Complete your online payment in the secure checkout.','');await startPayment(record);var upd=await client.from('orders').update({payment_status:'paid'}).eq('id',id);/* server verification is authoritative; public update may be blocked by RLS */}
+await notify(record);$('doneTitle').textContent='Order received · '+orderNo;$('doneText').textContent='Total '+money(total)+'. '+(payment==='online'?'Payment confirmation is being recorded.':'Payment due: '+money(total)+'.')+' Track this order under My orders.';$('done').hidden=false;cart=[];render();note('');window.scrollTo({top:0,behavior:'smooth'});loadMyOrders();}catch(e){note(e.message||'Order could not be submitted. Please try again.')}finally{busy=false;render()}}
+$('submitOrder').addEventListener('click',e=>{e.preventDefault();place()});$('placeBtn').addEventListener('click',()=>{$('orderForm').scrollIntoView({behavior:'smooth'});$('cname').focus()});
+async function loadMyOrders(){var box=$('myOrders');box.innerHTML='';if(!client){box.textContent='Supabase setup is required to track orders.';return}var tokens=JSON.parse(localStorage.getItem('printdesk-order-tokens')||'[]');if(!tokens.length){box.textContent='No orders saved on this device yet.';return}for(var t of tokens){var r=await client.rpc('get_order_by_token',{p_token:t});if(r.error)continue;(r.data||[]).forEach(o=>{var c=document.createElement('div');c.className='card';c.innerHTML='<div class="ohead"><h3>'+esc(o.order_number)+'</h3><span class="chip '+esc(o.status)+'">'+esc(o.status)+'</span></div><div class="order-meta">'+esc(o.created_at)+' · '+esc(o.fulfillment)+' · '+esc(o.payment_status)+'</div><div class="ofoot"><span>Total</span><b>'+money(o.total_amount)+'</b></div>';box.append(c)})}if(!box.children.length)box.textContent='No matching orders found.'}
+async function adminLoad(){var box=$('adminList');box.innerHTML='';$('adminNote').hidden=true;var r=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(200);if(r.error){$('adminNote').textContent='Admin access required. Set app_metadata role=admin for your Supabase user.';$('adminNote').hidden=false;return}var rows=r.data||[];$('stats').innerHTML='<div class="stat"><b>'+rows.length+'</b><span>Total orders</span></div><div class="stat"><b>'+rows.filter(x=>x.status==='pending').length+'</b><span>Pending</span></div><div class="stat"><b>'+money(rows.filter(x=>x.payment_status==='paid').reduce((s,x)=>s+x.total_amount,0))+'</b><span>Paid</span></div>';for(var o of rows){var card=document.createElement('div');card.className='card';var links='';for(var it of (o.items||[])){var signed=await client.storage.from('printdesk-orders').createSignedUrl(it.storage_path,3600);links+='<p><a target="_blank" rel="noopener" href="'+(signed.data?.signedUrl||'#')+'">'+esc(it.name)+' · '+it.pages+' pages × '+it.copies+'</a></p>'}card.innerHTML='<div class="ohead"><h3>'+esc(o.order_number)+' · '+esc(o.customer_name)+'</h3><span class="chip pending">'+esc(o.status)+'</span></div><div class="order-meta">'+esc(o.customer_phone)+' · '+esc(o.fulfillment)+' · '+esc(o.payment_method)+' / '+esc(o.payment_status)+'</div><div class="order-meta">'+esc(o.delivery_address||'Shop pickup')+'</div><div class="items">'+links+'</div><div class="ofoot"><b>'+money(o.total_amount)+'</b><select aria-label="Update order status" data-id="'+o.id+'"><option>pending</option><option>printing</option><option>printed</option><option>ready</option><option>completed</option><option>cancelled</option></select></div>';card.querySelector('select').value=o.status;card.querySelector('select').addEventListener('change',async e=>{var u=await client.from('orders').update({status:e.target.value}).eq('id',o.id);if(u.error)alert(u.error.message);else adminLoad()});box.append(card)}}
+$('loginBtn').addEventListener('click',async()=>{var r=await client.auth.signInWithPassword({email:$('adminEmail').value,password:$('adminPassword').value});if(r.error){$('adminNote').textContent=r.error.message;$('adminNote').hidden=false;return}$('adminLogin').hidden=true;$('adminPanel').hidden=false;adminLoad()});$('logoutBtn').addEventListener('click',async()=>{await client.auth.signOut();$('adminLogin').hidden=false;$('adminPanel').hidden=true});$('refreshAdmin').addEventListener('click',adminLoad);
+function route(){var t=location.hash.slice(1)||'print';['print','orders','admin'].forEach(x=>{$('screen-'+x).hidden=x!==t;document.querySelector('[data-tab="'+x+'"]').setAttribute('aria-current',x===t?'page':'false')});$('bar').hidden=t!=='print'||!cart.length;if(t==='orders')loadMyOrders()}
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.tab}));window.addEventListener('hashchange',route);
+try{var saved=JSON.parse(localStorage.getItem('printdesk-contact')||'null');if(saved){$('cname').value=saved.name||'';$('cphone').value=saved.phone||''}}catch(e){}
+if(window.supabase&&SUPABASE_URL.startsWith('https://')&&SUPABASE_ANON_KEY.length>20){client=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);$('setupNotice').hidden=true}else $('setupNotice').textContent='Setup required: add your Supabase project URL and anon key in index.html, then run supabase-schema.sql in Supabase SQL Editor.';
+render();route();
+})();
+</script></body></html>
