@@ -249,7 +249,13 @@ $('loginBtn').addEventListener('click',async()=>{var r=await client.auth.signInW
 function route(){var t=location.hash.slice(1)||'print';['print','orders','admin'].forEach(x=>{$('screen-'+x).hidden=x!==t;document.querySelector('[data-tab="'+x+'"]').setAttribute('aria-current',x===t?'page':'false')});$('bar').hidden=t!=='print'||!cart.length;if(t==='orders')loadMyOrders()}
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.tab}));window.addEventListener('hashchange',route);
 try{var saved=JSON.parse(localStorage.getItem('printdesk-contact')||'null');if(saved){$('cname').value=saved.name||'';$('cphone').value=saved.phone||''}}catch(e){}
-if(window.supabase&&SUPABASE_URL.startsWith('https://')&&SUPABASE_ANON_KEY.length>20){client=window.supabase.createClient(https://uexqytykpwwnufsnvtqs.supabase.co, sb_publishable_K9FSpUd1MpyaBcHtSLoHUQ_mTLZdSNv);$('setupNotice').hidden=true}else $('setupNotice').textContent='Setup required: add your Supabase project URL and anon key in index.html, then run supabase-schema.sql in Supabase SQL Editor.';
+if (window.supabase && SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.length > 20) {
+  client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  $('setupNotice').hidden = true;
+} else {
+  $('setupNotice').textContent = 'Setup required: add your Supabase project URL and anon key in index.html, then run supabase-schema.sql in Supabase SQL Editor.';
+}
+
 render();route();
 })();
 </script></body></html>
